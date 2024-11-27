@@ -6,7 +6,7 @@ import torch.nn as nn
 from torch.distributions import Normal
 from tqdm import tqdm
 
-# Gaussian distribution for the agent
+# Gaussian distribution for the agents
 class Gaussian(nn.Module):
     def __init__(self):
         super().__init__()
