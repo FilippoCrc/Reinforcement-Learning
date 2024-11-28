@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 from torch.distributions import Normal
 from tqdm import tqdm
+import os
 
 # Gaussian distribution for the agents
 class Gaussian(nn.Module):
@@ -69,7 +70,9 @@ class PPO(nn.Module):
 
         # ===== Actor =====
         x_action_mean = (self.action_mean(x))
-        x_action_std = self.std_activation(self.action_std(x))
+        #x_action_std = self.std_activation(self.action_std(x))
+        x_action_std = torch.clamp(self.std_activation(self.action_std(x)), min=1e-6)
+
 
         mean, actions, log_actions, entropy = self.gaussian(x_action_mean, x_action_std, old_actions)
 
@@ -95,7 +98,7 @@ class Policy(nn.Module):
         self.entropy_factor = 0.005
 
         # Training parameters
-        self.n_episodes = 10000
+        self.n_episodes = 100
         self.n_updates_per_episode = 5
 
         # Create the agent
@@ -295,10 +298,23 @@ class Policy(nn.Module):
         return
 
     def save(self, episode_score=None, iteration=None):
-        torch.save(self.state_dict(), f'model_{iteration}_{episode_score:.5f}.pt')
+        #torch.save(self.state_dict(), f'model_{iteration}_{episode_score:.5f}.pt')
+        torch.save(self.agent.state_dict(), 'model.pt')  # Always save a 'model.pt' checkpoint
+
 
     def load(self):
         self.load_state_dict(torch.load('model.pt', map_location=self.device))
-
+        # Find the best checkpoint dynamically
+        """ checkpoint_files = [f for f in os.listdir('.') if f.startswith('model_') and f.endswith('.pt')]
+        if not checkpoint_files:
+            raise FileNotFoundError("No checkpoint files found in the current directory.")
+    
+        # Sort files by their naming convention to pick the latest or best
+        checkpoint_files.sort(key=lambda x: float(x.split('_')[-1].replace('.pt', '')))  # Sort by performance
+        best_checkpoint = checkpoint_files[0]  # Change index to -1 if you want the last checkpoint
+    
+        print(f"Loading checkpoint: {best_checkpoint}")
+        self.load_state_dict(torch.load(best_checkpoint, map_location=self.device))
+ """
     def to_torch(self, tensor):
         return torch.tensor(tensor.copy(), dtype=torch.float32, device=self.device)
