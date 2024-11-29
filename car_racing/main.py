@@ -1,7 +1,7 @@
 import argparse
 import random
 import numpy as np
-from student import Policy
+from student4 import Policy
 import gymnasium as gym
 
 def evaluate(env=None, n_episodes=1, render=False):

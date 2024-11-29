@@ -98,7 +98,7 @@ class Policy(nn.Module):
         self.entropy_factor = 0.005
 
         # Training parameters
-        self.n_episodes = 100
+        self.n_episodes = 1000
         self.n_updates_per_episode = 5
 
         # Create the agent
